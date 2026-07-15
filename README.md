@@ -8,7 +8,7 @@ This project aims to build and manage Asset Administration Shells (AAS) for Afri
 
 ### 2. Asset Administration Shell (AAS)
 - **id_short**: `LAG14ER`
-- **id**: `https://www.afriso.com/aas/LAG14ER` (Global unique logical URI for registry).
+- **id_**: `https://www.afriso.com/aas/LAG14ER` (Globally unique identifier (URI) that can be used directly as an API endpoint (HTTP GET) on the Afriso AAS registry server.)
 - **display_name**: Multi-language name.
 - **description**: Product designation in German (`Steuergerät LAG-14 ER / Leckanzeiger`)
 - **administration**: AAS metadata versioning initialized at `1.0`.
