@@ -194,7 +194,7 @@
               "modelType": "MultiLanguageProperty",
               "value": [
                 {
-                  "language": "en",
+                  "language": "de",
                   "text": "Steuergerät LAG-14 ER"
                 }
               ]
@@ -349,12 +349,6 @@
                           }
                         ]
                       },
-                      "value": [
-                        {
-                          "language": "en",
-                          "text": "Notes or explanations about the image provided"
-                        }
-                      ],
                       "modelType": "MultiLanguageProperty"
                     }
                   ],
@@ -565,12 +559,6 @@
                       }
                     ]
                   },
-                  "value": [
-                    {
-                      "language": "en",
-                      "text": "Name of product class in the used classification system"
-                    }
-                  ],
                   "modelType": "MultiLanguageProperty"
                 },
                 {
@@ -915,7 +903,7 @@
                   },
                   "value": [
                     {
-                      "language": "en",
+                      "language": "de",
                       "text": "Für doppelwandige Behälter mit Flüssigkeit im Überwachungsraum"
                     }
                   ],
@@ -986,12 +974,6 @@
                   }
                 ]
               },
-              "value": [
-                {
-                  "language": "en",
-                  "text": "Statement by the manufacturer in text form, e.g. scope of validity of the statements, scopes of application, conditions of operation."
-                }
-              ],
               "modelType": "MultiLanguageProperty"
             },
             {
@@ -1265,7 +1247,7 @@
                       },
                       "value": [
                         {
-                          "language": "en",
+                          "language": "de",
                           "text": "Für doppelwandige Behälter mit Flüssigkeit im Überwachungsraum"
                         },
                         {
@@ -1338,7 +1320,7 @@
                   },
                   "value": [
                     {
-                      "language": "en",
+                      "language": "de",
                       "text": "Für doppelwandige Behälter mit Flüssigkeit im Überwachungsraum"
                     }
                   ],
@@ -1434,7 +1416,7 @@
           },
           "value": [
             {
-              "language": "en",
+              "language": "de",
               "text": "Steuergerät LAG-14 ER"
             }
           ],
@@ -1466,7 +1448,7 @@
           },
           "value": [
             {
-              "language": "en",
+              "language": "de",
               "text": "Haustechnik"
             }
           ],
@@ -1494,7 +1476,7 @@
           },
           "value": [
             {
-              "language": "en",
+              "language": "de",
               "text": "Zubehör / Ersatzteile Leckanzeiger, Lecküberwachungssysteme und Leckschutzauskleidungen"
             }
           ],
@@ -1542,7 +1524,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "FM11-ABC22-123456",
           "modelType": "Property"
         },
         {
@@ -1557,7 +1538,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "12345678",
           "modelType": "Property"
         },
         {
@@ -1572,7 +1552,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "2022",
           "modelType": "Property"
         },
         {
@@ -1587,7 +1566,6 @@
             ]
           },
           "valueType": "xs:date",
-          "value": "2022-01-01",
           "modelType": "Property"
         },
         {
@@ -1602,7 +1580,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "1.0.0",
           "modelType": "Property"
         },
         {
@@ -1617,7 +1594,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "1.0.0",
           "modelType": "Property"
         },
         {
@@ -1632,7 +1608,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "1.0.0",
           "modelType": "Property"
         },
         {
@@ -1647,7 +1622,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "DE",
           "modelType": "Property"
         },
         {
@@ -1662,7 +1636,6 @@
             ]
           },
           "valueType": "xs:string",
-          "value": "987654321",
           "modelType": "Property"
         },
         {
@@ -1730,7 +1703,6 @@
                     ]
                   },
                   "valueType": "xs:string",
-                  "value": "KEMA99IECEX1105/128",
                   "modelType": "Property"
                 },
                 {
@@ -1745,7 +1717,6 @@
                     ]
                   },
                   "valueType": "xs:date",
-                  "value": "2022-01-01",
                   "modelType": "Property"
                 },
                 {
@@ -1760,7 +1731,6 @@
                     ]
                   },
                   "valueType": "xs:date",
-                  "value": "2022-01-01",
                   "modelType": "Property"
                 },
                 {
@@ -1789,7 +1759,6 @@
                     ]
                   },
                   "valueType": "xs:string",
-                  "value": "0044",
                   "modelType": "Property"
                 }
               ],
@@ -1837,7 +1806,7 @@
               },
               "value": [
                 {
-                  "language": "en",
+                  "language": "de",
                   "text": "Für doppelwandige Behälter mit Flüssigkeit im Überwachungsraum"
                 }
               ],
@@ -1936,7 +1905,7 @@
                       },
                       "value": [
                         {
-                          "language": "en",
+                          "language": "de",
                           "text": "Für doppelwandige Behälter mit Flüssigkeit im Überwachungsraum"
                         }
                       ],

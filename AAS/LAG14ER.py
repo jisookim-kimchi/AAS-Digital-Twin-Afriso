@@ -5,7 +5,7 @@ import pandas as panda
 from basyx.aas.adapter.json import read_aas_json_file
 #print(help(read_aas_json_file))
 from basyx.aas.adapter import aasx
-from basyx.aas.model import DictObjectStore
+from basyx.aas.model import DictIdentifiableStore
 #print(help(DictObjectStore))
 
 def main():
@@ -22,6 +22,7 @@ def main():
 
     excel_data = panda.read_excel(excel_path, sheet_name=None, header=4)
     value_map = {}
+    lang_map = {}
      
     for sheets, table_data in excel_data.items():
         #print(table_data.columns.tolist())
@@ -38,8 +39,13 @@ def main():
                 # if id_short and val is not empty
                 if panda.notna(id_short) and panda.notna(val):
                     # val is a instance of str class and '@de', '@en' eliminating if it exists
-                    if isinstance(val, str) and ('@de' in val or '@en' in val):
-                        val = val.split('@')[0]
+                    if isinstance(val, str):
+                        if '@de' in val:
+                            val = val.split('@')[0]
+                            lang_map[str(id_short)] = "de"
+                        elif '@en' in val:
+                            val = val.split('@')[0]
+                            lang_map[str(id_short)] = "en"
                     value_map[str(id_short)] = val
 
     print(f"Number of data from excel: {len(value_map)}")
@@ -52,20 +58,26 @@ def main():
     # 3. 재귀 함수로 JSON 전체를 뒤져서 idShort가 매핑 테이블에 있으면 값을 교체
     def replace_values(node):
         if isinstance(node, dict):
-            # 현재 노드에 'idShort'와 'value'가 모두 있으면 교체 시도
+            # 현재 노드에 'idShort'와 'value'가 모두 있으면 교체 및 청소 시도
             if "idShort" in node and "value" in node and "modelType" in node:
                 key = node["idShort"]
-                if key in value_map:
-                    model_type = node["modelType"]
+                model_type = node["modelType"]
                 
-                    # Property나 File 같은 단일 값인 경우에만 덮어쓰기
+                # 1. 바구니에 진짜 데이터가 있으면 그걸로 덮어쓰기
+                if key in value_map:
                     if model_type in ["Property", "File"]:
                         node["value"] = str(value_map[key])
-                    
-                    # 다국어 속성(MultiLanguageProperty)인 경우 안의 배열 첫 번째 요소를 덮어쓰기
                     elif model_type == "MultiLanguageProperty":
                         if isinstance(node["value"], list) and len(node["value"]) > 0 and isinstance(node["value"][0], dict) and "text" in node["value"][0]:
                             node["value"][0]["text"] = str(value_map[key])
+                            if key in lang_map:
+                                node["value"][0]["language"] = lang_map[key]
+                
+                # 2. 바구니에 진짜 데이터가 없으면 (엑셀이 빈칸이면) 말단 데이터의 예시만 통째로 삭제해 버리기!
+                else:
+                    if model_type in ["Property", "File", "MultiLanguageProperty"]:
+                        if "value" in node:
+                            del node["value"]
                 
                 # 만약 SubmodelElementList나 Collection이면 그 자체를 문자열로 덮어쓰면 안 됩니다!
                 
@@ -85,7 +97,7 @@ def main():
 
     # reading json file and make object store
     with open(output_json_path, "r", encoding="utf-8") as f:
-        object_store = DictObjectStore(read_aas_json_file(f))
+        object_store = DictIdentifiableStore(read_aas_json_file(f))
 
     file_store = aasx.DictSupplementaryFileContainer()
     aasx_path = os.path.join("..","aasx", "LAG14ER.aasx")
