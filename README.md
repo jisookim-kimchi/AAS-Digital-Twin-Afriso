@@ -34,7 +34,8 @@ It combines:
 5. [Configure environment variables](#5-configure-environment-variables)
 6. [Expected project structure](#6-expected-project-structure)
 7. [Running the project](#7-running-the-project)
-8. [Troubleshooting](#8-troubleshooting)
+8. [Makefile & helper script reference](#8-makefile--helper-script-reference)
+9. [Troubleshooting](#9-troubleshooting)
 
 ---
 
@@ -94,7 +95,7 @@ The stack is based on [Eclipse BaSyx](https://www.eclipse.org/basyx/) and consis
 ## 2. 📋 Prerequisites
 
 - 🐧 A Linux, macOS, or WSL2 environment
-- 🦭 [Podman](https://podman.io/) (used here instead of Docker, but the `docker compose` CLI syntax is kept via `podman-compose`)
+- 🦭 [Podman](https://podman.io/) as the container engine, orchestrated via `podman-compose`
 - 🐍 Python 3.9+
 - 🔨 `make`
 
@@ -102,20 +103,22 @@ The stack is based on [Eclipse BaSyx](https://www.eclipse.org/basyx/) and consis
 
 ## 3. 🦭 Install Podman
 
+`podman-compose` is what actually drives the containers here (the `Makefile` calls it directly — no Docker shim needed). You still need the `podman` engine itself installed at the system level; `podman-compose` is then installed automatically into the project's virtual environment by `make venv` (see next section).
+
 ### Debian / Ubuntu
 ```bash
 sudo apt update
-sudo apt install -y podman podman-compose
+sudo apt install -y podman
 ```
 
 ### Fedora / RHEL / CentOS
 ```bash
-sudo dnf install -y podman podman-compose
+sudo dnf install -y podman
 ```
 
 ### macOS (via Homebrew)
 ```bash
-brew install podman podman-compose
+brew install podman
 podman machine init
 podman machine start
 ```
@@ -123,50 +126,44 @@ podman machine start
 ### Verify installation
 ```bash
 podman --version
-podman-compose --version
 ```
 
-### Make `docker compose` commands work with Podman
-The `Makefile` in this project calls `docker compose` directly. The simplest way to make that work with Podman is to alias Docker's CLI to Podman:
-
-```bash
-sudo apt install -y podman-docker   # Debian/Ubuntu: provides a `docker` shim for `podman`
-```
-
-Alternatively, edit the `Makefile` and replace `docker compose` with `podman-compose` (or `podman compose`, available in recent Podman versions).
-
-> **Note:** the `Makefile` includes a reminder comment (`# need to change podman version`) — double-check the BaSyx image tags in `docker-compose.yml` are compatible with your Podman/Compose version before running `make up`.
+> **Note:** the original Makefile comment flagged `# need to change podman version` — double-check the BaSyx image tags in `docker-compose.yml` are compatible with your installed Podman version before running `make up`.
 
 ---
 
 ## 4. 🐍 Set up the Python environment
 
-From the project root:
+The project manages its own virtual environment via `make` — you don't need to create it manually.
 
+### Create the virtual environment & install dependencies
 ```bash
-# Create a virtual environment
-python3 -m venv .venv
-
-# Activate it
-source .venv/bin/activate        # Linux/macOS
-# .venv\Scripts\activate         # Windows
-
-# Upgrade pip
-pip install --upgrade pip
+make venv
 ```
-
-### Install dependencies
-
-```bash
-pip install pandas openpyxl basyx-python-sdk requests
-```
+This creates a `.venv/` folder and installs all required packages into it:
 
 | Package | Purpose |
 |---|---|
 | `pandas` | Reads and processes the Excel source data |
 | `openpyxl` | Excel (`.xlsx`) engine used by `pandas` |
 | `basyx-python-sdk` | Reads/writes AAS JSON and builds `.aasx` packages |
+| `pyecma376-2` | OPC/ECMA-376 package format support, used when building `.aasx` files |
 | `requests` | Uploads the generated `.aasx` file to the AAS environment |
+| `podman-compose` | Container orchestration (installed into the venv so it's always available) |
+
+> `make up` and `make run` both depend on `venv`, so it's created automatically the first time you run either — running `make venv` yourself is optional but useful if you just want the environment ready.
+
+### 🔌 Activate / deactivate helper scripts
+Two convenience scripts are included so you don't have to remember the `.venv/bin/activate` path:
+
+```bash
+source activate_venv.sh      # activates .venv, or tells you to run `make venv` first
+```
+```bash
+source deactivate_venv.sh    # deactivates the current venv
+```
+
+> ⚠️ Both scripts must be **sourced**, not executed directly (`./activate_venv.sh` won't work) — sourcing runs them in your current shell, which is required for `activate`/`deactivate` to affect your session.
 
 ---
 
@@ -198,8 +195,11 @@ project-root/
 │   └── <PRODUCT_ID>.aasx          # generated AASX package
 ├── scripts/                  # or wherever <PRODUCT_ID>.py lives
 │   └── <PRODUCT_ID>.py
+├── main.py                   # entry point invoked by `make run`
 ├── docker-compose.yml
 ├── Makefile
+├── activate_venv.sh
+├── deactivate_venv.sh
 └── .env
 ```
 
@@ -217,7 +217,7 @@ mkdir -p xlsx json_template output_json aasx
 ```bash
 make up
 ```
-This creates the required local data/config folders and starts all containers (`mongo`, `machine1-aas`, `machine2-aas`, `aas-registry`, `submodel-registry`, `aas-ui`).
+This automatically creates the virtual environment (`venv`, if it doesn't exist yet), creates the required local `data/` and `config/` folders, and starts all containers (`mongo`, `machine1-aas`, `machine2-aas`, `aas-registry`, `submodel-registry`, `aas-ui`) via `podman-compose up -d`.
 
 Check logs:
 ```bash
@@ -227,30 +227,48 @@ make logs
 Once running, the web UI is available at **[http://localhost:3000](http://localhost:3000)** 🎉
 
 ### 📤 Generate and upload the AAS package
-With the virtual environment activated and the containers running:
+Run the conversion pipeline through the Makefile — this uses the venv's Python automatically, no manual activation needed:
 ```bash
-python <PRODUCT_ID>.py
+make run
 ```
-*(Replace `<PRODUCT_ID>` with your product's script, e.g. `python LAG14ER.py`.)*
+This invokes `main.py` with the venv's interpreter, which reads `xlsx/<PRODUCT_ID>.xlsx`, fills the AAS template, writes `output_json/<PRODUCT_ID>_output.json`, builds `aasx/<PRODUCT_ID>.aasx`, and uploads it to `http://localhost:8081/upload` (the `machine1-aas` service).
 
-This reads `xlsx/<PRODUCT_ID>.xlsx`, fills the AAS template, writes `output_json/<PRODUCT_ID>_output.json`, builds `aasx/<PRODUCT_ID>.aasx`, and uploads it to `http://localhost:8081/upload` (the `machine1-aas` service).
+> 💡 Prefer working inside an activated shell instead? Run `source activate_venv.sh`, then call your product script directly (e.g. `python <PRODUCT_ID>.py`), and `source deactivate_venv.sh` when you're done.
 
 ### 🧹 Stop / clean up
 ```bash
 make down     # stop containers
 make clean    # stop containers and remove volumes
-make fclean   # full clean: remove images, volumes, and local mongo data
+make fclean   # full clean: remove images, volumes, local mongo data, and the .venv
 ```
 
 ---
 
-## 8. 🆘 Troubleshooting
+## 8. 🔨 Makefile & helper script reference
+
+| Command | What it does |
+|---|---|
+| `make venv` | Creates `.venv/` and installs `pandas`, `basyx-python-sdk`, `openpyxl`, `pyecma376-2`, `requests`, `podman-compose` |
+| `make up` | Depends on `venv`; creates `data/mongodb` and `config/` folders, then runs `podman-compose up -d` |
+| `make run` | Depends on `venv`; runs `main.py` using the venv's Python |
+| `make logs` | Tails logs from all running containers |
+| `make down` | Stops all containers |
+| `make clean` | Stops containers and removes volumes |
+| `make fclean` | Full reset: removes images, volumes, orphan containers, local Mongo data, **and** `.venv` |
+| `source activate_venv.sh` | Activates `.venv` in your current shell (prompts you to run `make venv` if it's missing) |
+| `source deactivate_venv.sh` | Deactivates the currently active virtual environment |
+
+---
+
+## 9. 🆘 Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| ❌ **Upload fails / connection refused** | Make sure `make up` has finished starting `machine1-aas` (check `make logs`) before running `<PRODUCT_ID>.py`. |
+| ❌ **Upload fails / connection refused** | Make sure `make up` has finished starting `machine1-aas` (check `make logs`) before running `make run`. |
 | ❌ **Excel columns not found** | The script expects a header row at Excel row 5 (`header=4`) with columns named `Element Name (idShort)` and `Actual Value`. |
-| ❌ **Podman + `docker compose` mismatch** | If `make up` fails with a "command not found" error, install `podman-docker` or edit the `Makefile` to call `podman-compose` instead of `docker compose`. |
+| ❌ **`podman-compose: command not found`** | It's installed inside `.venv`, not system-wide — run `make venv` first, or activate the venv with `source activate_venv.sh` before calling `podman-compose` manually. |
+| ❌ **`activate_venv.sh` says the venv doesn't exist** | Run `make venv` (or `make up` / `make run`, which create it automatically) before sourcing the script. |
+| ❌ **Activating/deactivating seems to do nothing** | Make sure you `source` the script rather than executing it (`source activate_venv.sh`, not `./activate_venv.sh`). |
 
 <div align="center">
 
