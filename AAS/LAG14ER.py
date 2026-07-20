@@ -5,7 +5,7 @@ import pandas as panda
 from basyx.aas.adapter.json import read_aas_json_file
 #print(help(read_aas_json_file))
 from basyx.aas.adapter import aasx
-from basyx.aas.model import DictIdentifiableStore
+from basyx.aas.model import DictObjectStore
 #print(help(DictObjectStore))
 
 def process_excel(excel_path):
@@ -86,7 +86,7 @@ def process_excel(excel_path):
 
     # reading json file and make object store
     with open(output_json_path, "r", encoding="utf-8") as f:
-        object_store = DictIdentifiableStore(read_aas_json_file(f))
+        object_store = DictObjectStore(read_aas_json_file(f))
 
     file_store = aasx.DictSupplementaryFileContainer()
     aasx_path = os.path.join(base_dir, "..", "aasx", f"{file_name}.aasx")
