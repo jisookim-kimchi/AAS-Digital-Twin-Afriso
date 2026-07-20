@@ -18,8 +18,4 @@ This project aims to build and manage Asset Administration Shells (AAS) for Afri
   - `Technical Data`
   - `Carbon Footprint`
   - `Maintenance Instructions`
-
-
------------------------------------------ aasx created : ----------------------------------------- /Users/JisooKim/jisoo/AAS/../aasx/LAG14ER.aasx
-Uploading LAG14ER.aasx to http://localhost:8080/upload...
-server upload result: 500 - {"timestamp":1784559425010,"status":500,"error":"Internal Server Error","path":"/upload"}
+  

@@ -1,0 +1,55 @@
+"""
+This package contains a python implementation of the metamodel of the AssetAdministrationShell.
+The model is divided into 5 modules, splitting it in sensible parts. However, all classes (except for the
+specialized Concept Descriptions) are imported into this top-level package, for simple imports like
+
+.. code-block:: python
+
+    from basyx.aas.model import AssetAdministrationShell, Submodel, Property
+"""
+
+from .aas import *
+from .base import *
+from .submodel import *
+from .provider import *
+from .concept import ConceptDescription
+from . import datatypes
+
+# A mapping of BaSyx Python SDK implementation classes to the corresponding `KeyTypes` enum members for all classes
+# that are covered by this enum.
+KEY_TYPES_CLASSES: Dict[Type[Referable], KeyTypes] = {
+    AssetAdministrationShell: KeyTypes.ASSET_ADMINISTRATION_SHELL,
+    ConceptDescription: KeyTypes.CONCEPT_DESCRIPTION,
+    Submodel: KeyTypes.SUBMODEL,
+    Entity: KeyTypes.ENTITY,
+    BasicEventElement: KeyTypes.BASIC_EVENT_ELEMENT,
+    EventElement: KeyTypes.EVENT_ELEMENT,  # type: ignore
+    Blob: KeyTypes.BLOB,
+    File: KeyTypes.FILE,
+    Operation: KeyTypes.OPERATION,
+    Capability: KeyTypes.CAPABILITY,
+    Property: KeyTypes.PROPERTY,
+    MultiLanguageProperty: KeyTypes.MULTI_LANGUAGE_PROPERTY,
+    Range: KeyTypes.RANGE,
+    ReferenceElement: KeyTypes.REFERENCE_ELEMENT,
+    DataElement: KeyTypes.DATA_ELEMENT,  # type: ignore
+    SubmodelElementCollection: KeyTypes.SUBMODEL_ELEMENT_COLLECTION,
+    SubmodelElementList: KeyTypes.SUBMODEL_ELEMENT_LIST,
+    AnnotatedRelationshipElement: KeyTypes.ANNOTATED_RELATIONSHIP_ELEMENT,
+    RelationshipElement: KeyTypes.RELATIONSHIP_ELEMENT,
+    SubmodelElement: KeyTypes.SUBMODEL_ELEMENT,  # type: ignore
+}
+
+
+def resolve_referable_class_in_key_types(referable: Referable) -> type:
+    """
+    Returns the type of referable if the type is given in `KEY_TYPES_CLASSES`, otherwise return the first parent class
+    in inheritance chain of the referable which is given in `KEY_TYPES_CLASSES`.
+
+    :raises TypeError: If the type of the referable or any of its parent classes is not given in `KEY_TYPES_CLASSES`.
+    """
+    try:
+        ref_type = next(iter(t for t in inspect.getmro(type(referable)) if t in KEY_TYPES_CLASSES))
+    except StopIteration:
+        raise TypeError(f"Could not find a matching class in KEY_TYPES_CLASSES for {type(referable)}")
+    return ref_type

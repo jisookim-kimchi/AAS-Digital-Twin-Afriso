@@ -33,7 +33,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0"
+              "value": "https://www.afriso.com/aas/LAG14ER/TechnicalData"
             }
           ]
         },
@@ -42,7 +42,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0"
+              "value": "https://www.afriso.com/aas/LAG14ER/Nameplate"
             }
           ]
         },
@@ -51,7 +51,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0"
+              "value": "https://www.afriso.com/aas/LAG14ER/CarbonFootprint"
             }
           ]
         },
@@ -60,7 +60,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0"
+              "value": "https://www.afriso.com/aas/LAG14ER/HandoverDocumentation"
             }
           ]
         },
@@ -69,7 +69,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0"
+              "value": "https://www.afriso.com/aas/LAG14ER/MaintenanceInstructions"
             }
           ]
         }
@@ -85,7 +85,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02003-2-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/TechnicalData/2/0",
+      "id": "https://www.afriso.com/aas/LAG14ER/TechnicalData",
       "kind": "Template",
       "semanticId": {
         "type": "ModelReference",
@@ -1375,7 +1375,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02006-3-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/DigitalNameplate/3/0",
+      "id": "https://www.afriso.com/aas/LAG14ER/Nameplate",
       "kind": "Template",
       "semanticId": {
         "type": "ExternalReference",
@@ -1971,7 +1971,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/IDTA 02023-1-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/CarbonFootprint/1/0",
+      "id": "https://www.afriso.com/aas/LAG14ER/CarbonFootprint",
       "kind": "Template",
       "semanticId": {
         "type": "ExternalReference",
@@ -2685,7 +2685,7 @@
         "revision": "0",
         "templateId": "https://admin-shell.io/idta-02004-2-0"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/HandoverDocumentation/2/0",
+      "id": "https://www.afriso.com/aas/LAG14ER/HandoverDocumentation",
       "kind": "Template",
       "semanticId": {
         "type": "ModelReference",
@@ -3623,7 +3623,7 @@
         "revision": "0",
         "templateId": "https://admin-shell-io/idta-02018"
       },
-      "id": "https://admin-shell.io/idta/SubmodelTemplate/MaintenanceInstructions/1/0",
+      "id": "https://www.afriso.com/aas/LAG14ER/MaintenanceInstructions",
       "kind": "Template",
       "semanticId": {
         "type": "ModelReference",

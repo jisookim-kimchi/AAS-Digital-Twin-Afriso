@@ -23,7 +23,7 @@ clean:
 
 fclean: clean
 	podman-compose down --rmi all -v --remove-orphans
-	sudo rm -rf data/mongodb
+	rm -rf data/mongodb
 	rm -rf $(VENV)
 
 run: venv
