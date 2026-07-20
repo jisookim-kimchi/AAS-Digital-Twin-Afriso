@@ -1,22 +1,22 @@
-# up:
-# 	mkdir -p data/mongodb
-# 	mkdir -p config
-# 	docker compose up -d
+up:
+	mkdir -p data/mongodb
+	mkdir -p config
+	docker compose up -d
 
-# down:
-# 	docker compose down
+down:
+	docker compose down
 
-# logs:
-# 	docker compose logs -f
+logs:
+	docker compose logs -f
 
-# clean:
-# 	docker compose down -v
+clean:
+	docker compose down -v
 
-# fclean: clean
-# 	docker compose down --rmi all -v --remove-orphans
-# 	sudo rm -rf data/mongodb
+fclean: clean
+	docker compose down --rmi all -v --remove-orphans
+	sudo rm -rf data/mongodb
 
-# .PHONY: up down logs clean fclean run
+.PHONY: up down logs clean fclean run
 
 run:
 	python3 main.py
