@@ -107,8 +107,8 @@ def process_excel(excel_path):
     
     try:
         with open(aasx_path, "rb") as f:
-            #(multipart/form-data)
-            res = requests.post(upload_url, files={"file": f})
+            file_tuple = (os.path.basename(aasx_path), f, "application/asset-administration-shell-package")
+            res = requests.post(upload_url, files={"file": file_tuple})
             print(f"server upload result: {res.status_code} - {res.text}")
     except requests.exceptions.ConnectionError:
         print(f"Warning: Failed to connect to server at {upload_url}. Is the server running?")
