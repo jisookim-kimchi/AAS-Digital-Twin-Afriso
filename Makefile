@@ -23,10 +23,30 @@ clean:
 
 fclean: clean
 	podman-compose down --rmi all -v --remove-orphans
-	rm -rf data/mongodb
-	rm -rf $(VENV)
+	sudo rm -rf data
+	sudo rm -rf $(VENV)
+
+# Docker-specific commands
+up-docker: venv
+	mkdir -p data/mongodb
+	mkdir -p config
+	docker-compose up -d
+
+down-docker:
+	docker compose down
+
+logs-docker:
+	docker compose logs -f
+
+clean-docker:
+	docker compose down -v
+
+fclean-docker: clean-docker
+	docker compose down --rmi all -v --remove-orphans
+	sudo rm -rf data
+	sudo rm -rf $(VENV)
 
 run: venv
 	$(PYTHON) main.py
 
-.PHONY: up venv down logs clean fclean run
+.PHONY: up venv down logs clean fclean run up-docker down-docker logs-docker clean-docker fclean-docker
