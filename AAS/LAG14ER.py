@@ -103,21 +103,85 @@ def process_excel(excel_path):
     print(f"----------------------------------------- aasx created : ----------------------------------------- {aasx_path}")
 
     import requests
+    import base64
     
     if file_name == "LAG14ER":
         upload_url = "http://localhost:8081/upload"
+        server_base_url = "http://localhost:8081"
     elif file_name == "PrimoVent":
         upload_url = "http://localhost:8082/upload"
+        server_base_url = "http://localhost:8082"
     else:
-        upload_url = "http://localhost:8081/upload" # default fallback
+        upload_url = "http://localhost:8081/upload"
+        server_base_url = "http://localhost:8081"
         
+    registry_base_url = "http://localhost:8083"
+    sm_registry_base_url = "http://localhost:8084"
+
+    def delete_existing_shell_or_sm(item_id, is_submodel=False):
+        b64_id = base64.b64encode(item_id.encode('utf-8')).decode('utf-8')
+        b64_url_safe = base64.urlsafe_b64encode(item_id.encode('utf-8')).decode('utf-8').rstrip('=')
+        
+        for enc_id in [b64_id, b64_url_safe]:
+            if not is_submodel:
+                # Delete Shell from AAS Server
+                try:
+                    requests.delete(f"{server_base_url}/shells/{enc_id}", timeout=5)
+                except Exception:
+                    pass
+                # Delete Shell Descriptor from AAS Registry
+                try:
+                    requests.delete(f"{registry_base_url}/shell-descriptors/{enc_id}", timeout=5)
+                except Exception:
+                    pass
+                try:
+                    requests.delete(f"{registry_base_url}/api/v3/shell-descriptors/{enc_id}", timeout=5)
+                except Exception:
+                    pass
+            else:
+                # Delete Submodel from AAS Server
+                try:
+                    requests.delete(f"{server_base_url}/submodels/{enc_id}", timeout=5)
+                except Exception:
+                    pass
+                # Delete Submodel Descriptor from Submodel Registry
+                try:
+                    requests.delete(f"{sm_registry_base_url}/submodel-descriptors/{enc_id}", timeout=5)
+                except Exception:
+                    pass
+                try:
+                    requests.delete(f"{sm_registry_base_url}/api/v3/submodel-descriptors/{enc_id}", timeout=5)
+                except Exception:
+                    pass
+
+    def cleanup_all():
+        if "assetAdministrationShells" in aas_data:
+            for shell in aas_data["assetAdministrationShells"]:
+                if "id" in shell:
+                    delete_existing_shell_or_sm(shell["id"], is_submodel=False)
+        if "submodels" in aas_data:
+            for sm in aas_data["submodels"]:
+                if isinstance(sm, dict) and "id" in sm:
+                    delete_existing_shell_or_sm(sm["id"], is_submodel=True)
+
     print(f"Uploading {file_name}.aasx to {upload_url}...")
     
     try:
         with open(aasx_path, "rb") as f:
             file_tuple = (os.path.basename(aasx_path), f, "application/asset-administration-shell-package")
             res = requests.post(upload_url, files={"file": file_tuple})
+            
+            if res.status_code in [409, 500] or "already exists" in res.text:
+                print(f"Existing AAS detected ({res.status_code}). Cleaning up old Shells and Submodels, then overwriting...")
+                
+                cleanup_all()
+                
+                with open(aasx_path, "rb") as f_retry:
+                    file_tuple_retry = (os.path.basename(aasx_path), f_retry, "application/asset-administration-shell-package")
+                    res = requests.post(upload_url, files={"file": file_tuple_retry})
+                    
             print(f"server upload result: {res.status_code} - {res.text}")
+            
     except requests.exceptions.ConnectionError:
         print(f"Warning: Failed to connect to server at {upload_url}. Is the server running?")
     except Exception as e:

@@ -147,8 +147,10 @@ services:
     container_name: nginx
     ports:
       - "8080:80"
+      - "8443:443"
     volumes:
       - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
     depends_on:
       - machine1-aas
       - machine2-aas
