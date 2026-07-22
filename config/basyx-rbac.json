@@ -1,0 +1,12 @@
+[
+  {
+    "role": "aas-user",
+    "target": ".*",
+    "action": "READ"
+  },
+  {
+    "role": "aas-admin",
+    "target": ".*",
+    "action": ".*"
+  }
+]

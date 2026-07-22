@@ -1,0 +1,66 @@
+{
+  "realm": "basyx",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "aas-admin",
+        "description": "READ/WRITE/DELETE AAS Data"
+      },
+      {
+        "name": "aas-user",
+        "description": "READ AAS Data"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "basyx-client",
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "enabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "user",
+      "email": "user@example.com",
+      "firstName": "User",
+      "lastName": "AAS",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "1234",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "aas-user"
+      ]
+    },
+    {
+      "username": "admin",
+      "email": "admin@example.com",
+      "firstName": "Admin",
+      "lastName": "AAS",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${env.KEYCLOAK_TEST_ADMIN_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "aas-admin",
+        "aas-user"
+      ]
+    }
+  ]
+}

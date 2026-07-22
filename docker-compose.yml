@@ -34,6 +34,14 @@ services:
       BASYX_EXTERNALURL: "http://localhost:8081"
       BASYX_FEATURE_AASREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SUBMODELREGISTRYINTEGRATION: "true"
+      BASYX_FEATURE_SECURITY_ENABLED: "true" 
+      BASYX_FEATURE_SECURITY_RBAC_ENABLED: "true"
+      BASYX_FEATURE_SECURITY_RBAC_POLICY: "/opt/basyx/basyx-rbac.json"
+      SPRING_PROFILES_ACTIVE: "jwt"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/basyx"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/basyx/protocol/openid-connect/certs"
+    volumes:
+      - ./config/basyx-rbac.json:/opt/basyx/basyx-rbac.json:ro
     depends_on:
       mongo:
         condition: service_healthy
@@ -57,6 +65,14 @@ services:
       BASYX_EXTERNALURL: "http://localhost:8082"
       BASYX_FEATURE_AASREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SUBMODELREGISTRYINTEGRATION: "true"
+      BASYX_FEATURE_SECURITY_ENABLED: "true" 
+      BASYX_FEATURE_SECURITY_RBAC_ENABLED: "true"
+      BASYX_FEATURE_SECURITY_RBAC_POLICY: "/opt/basyx/basyx-rbac.json"
+      SPRING_PROFILES_ACTIVE: "jwt"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/basyx"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/basyx/protocol/openid-connect/certs"
+    volumes:
+      - ./config/basyx-rbac.json:/opt/basyx/basyx-rbac.json:ro
     depends_on:
       mongo:
         condition: service_healthy
@@ -157,6 +173,43 @@ services:
     networks: 
       - frontend
       - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    restart: unless-stopped
+    command: start-dev --import-realm
+    ports:
+      - "9999:8080"
+    volumes:
+      - ./config/basyx-realm.json:/opt/keycloak/data/import/basyx-realm.json:ro
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_TEST_USER_PASSWORD: ${KEYCLOAK_TEST_USER_PASSWORD}
+      KEYCLOAK_TEST_ADMIN_PASSWORD: ${KEYCLOAK_TEST_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloack-postgres:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      - keycloack-postgres
+    networks: 
+      - frontend
+      - backend
+
+  keycloack-postgres:
+    image: postgres:16
+    container_name: keycloack-postgres
+    restart: unless-stopped
+    environment: 
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data/keycloack-postgres:/var/lib/postgresql/data
+    networks: 
+      - backend 
 
 networks:
   backend:
