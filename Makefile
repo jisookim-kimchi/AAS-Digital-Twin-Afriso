@@ -1,12 +1,16 @@
 VENV := .venv
 PYTHON := $(VENV)/bin/python3
 PIP := $(VENV)/bin/pip
+PODMAN_COMPOSE := $(VENV)/bin/podman-compose
 
 # Start services using podman-compose
 up: venv
 	mkdir -p data/mongodb
 	mkdir -p config
-	podman-compose up -d
+	chmod 644 certs/private.key certs/certificate.crt 2>/dev/null || true
+	$(PODMAN_COMPOSE) up -d
+
+up-podman: up
 
 # Create Python virtual environment and install dependencies
 venv:
@@ -16,26 +20,35 @@ venv:
 
 # Stop podman-compose services
 down:
-	podman-compose down
+	$(PODMAN_COMPOSE) down
 
-# Tail podman-compose logs
+down-podman: down
+
+# Tail podman-compose logs filtered for errors/warnings
 logs:
-	podman-compose logs -f
+	$(PODMAN_COMPOSE) logs -f | grep --line-buffered -iE "warn|error|fail" || true
+
+logs-podman: logs
 
 # Remove containers and volumes (podman)
 clean:
-	podman-compose down -v
+	$(PODMAN_COMPOSE) down -v
+
+clean-podman: clean
 
 # Deep clean including volumes, images, data, and venv (podman)
 fclean: clean
-	podman-compose down --rmi all -v --remove-orphans
+	$(PODMAN_COMPOSE) down --rmi all -v --remove-orphans
 	sudo rm -rf data
 	sudo rm -rf $(VENV)
+
+fclean-podman: fclean
 
 # Start services using Docker Compose
 up-docker: venv
 	mkdir -p data/mongodb
 	mkdir -p config
+	chmod 644 certs/private.key certs/certificate.crt 2>/dev/null || true
 	docker-compose up -d
 
 # Tail Docker Compose logs filtered for errors/warnings
@@ -112,18 +125,28 @@ add-customer:
 request-partner:
 	$(PYTHON) request_partner_data.py $(IP) $(USER) $(PASSWORD)
 
-# View Nginx GET access logs (Read events)
+# View Nginx GET API access logs (Read events)
 check-logs-get:
-	@echo "Nginx Gateway GET Access Logs"
-	@docker logs nginx 2>&1 | grep "GET" | tail -n 20 || echo "(No GET logs found)"
+	@docker logs nginx 2>&1 | grep -E "\"GET /(shells|submodels|upload)" | tail -n 20 | awk '{print "IP:", $$1, "| Time:", $$4, "| Data:", $$7, "| Client:", $$NF}' | tr -d '[]"' || echo "(No GET logs found)"
 
-# View Nginx POST access logs (Write events)
+# View Nginx POST API access logs (Create & Upload events)
 check-logs-post:
-	@echo "Nginx Gateway POST Access Logs"
-	@docker logs nginx 2>&1 | grep "POST" | tail -n 20 || echo "(No POST logs found)"
+	@docker logs nginx 2>&1 | grep -E "\"POST /(shells|submodels|upload)" | tail -n 20 | awk '{print "IP:", $$1, "| Time:", $$4, "| Data:", $$7, "| Client:", $$NF}' | tr -d '[]"' || echo "(No POST logs found)"
+
+# View Nginx DELETE API access logs (Delete events)
+check-logs-delete:
+	@docker logs nginx 2>&1 | grep -E "\"DELETE /(shells|submodels)" | tail -n 20 | awk '{print "IP:", $$1, "| Time:", $$4, "| Data:", $$7, "| Client:", $$NF}' | tr -d '[]"' || echo "(No DELETE logs found)"
+
+# View all Nginx API access audit logs
+check-logs-all:
+	@docker logs nginx 2>&1 | grep -E "\"(GET|POST|PUT|DELETE) /(shells|submodels|upload)" | tail -n 30 | awk '{print "IP:", $$1, "| Time:", $$4, "| Method:", $$6, "| Data:", $$7, "| Client:", $$NF}' | tr -d '[]"' || echo "(No API logs found)"
+
+# View Nginx 401/403 security blocked logs
+check-logs-blocked:
+	@docker logs nginx 2>&1 | grep -E " (401|403) " | tail -n 20 | awk '{print "IP:", $$1, "| Time:", $$4, "| Status:", $$9, "| Data:", $$7, "| Client:", $$NF}' | tr -d '[]"' || echo "(No blocked logs found)"
 
 # Output Keycloak logout URL for session reset
 keycloak-logout:
 	@echo "http://localhost:9999/realms/basyx/protocol/openid-connect/logout"
 
-.PHONY: up venv down logs clean fclean run up-docker logs-docker down-docker clean-docker fclean-docker check-mongo check-nginx check-keycloak check-aas check-aas2 check-aas-registry check-sm check-ui check-all check-token get-user-token get-admin-token add-customer request-partner check-logs-get check-logs-post check-logs-blocked logout
+.PHONY: up venv down logs clean fclean up-podman down-podman logs-podman clean-podman fclean-podman run up-docker logs-docker down-docker clean-docker fclean-docker check-mongo check-nginx check-keycloak check-aas check-aas2 check-aas-registry check-sm check-ui check-all check-token get-user-token get-admin-token add-customer request-partner check-logs-get check-logs-post check-logs-delete check-logs-all check-logs-blocked keycloak-logout
