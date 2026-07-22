@@ -16,7 +16,11 @@
       "description": [
         {
           "language": "de",
-          "text": "Steuergerät LAG-14 ER / Leckanzeiger"
+          "text": "Schnellentlüfter PrimoVent Kunststoff G 77766"
+        },
+        {
+          "language": "en",
+          "text": "PrimoVent Automatic Air Vent"
         }
       ],
       "administration": {
@@ -24,8 +28,13 @@
         "revision": "0"
       },
       "assetInformation": {
-        "assetKind": "Type",
-        "globalAssetId": "https://www.afriso.com/de/produkte/haustechnik/leckanzeiger-leckueberwachungssysteme-und-leckschutzauskleidungen/zubehoer-ersatzteile-leckanzeiger-leckueberwachungssysteme-und-leckschutzauskleidungen/lag-14-er/40642-signalteil-lag-14-er"
+        "assetKind": "Instance",
+        "globalAssetId": "https://www.afriso.com/77766/SN-0000001",
+        "assetType": "Schnellentlüfter / Automatic Air Vent",
+        "defaultThumbnail": {
+          "path": "/aasx/Nameplate/marking_ce.png",
+          "contentType": "image/png"
+        }
       },
       "submodels": [
         {

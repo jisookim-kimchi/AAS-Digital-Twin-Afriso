@@ -24,8 +24,13 @@
         "revision": "0"
       },
       "assetInformation": {
-        "assetKind": "Type",
-        "globalAssetId": "https://www.afriso.com/de/produkte/haustechnik/leckanzeiger-leckueberwachungssysteme-und-leckschutzauskleidungen/zubehoer-ersatzteile-leckanzeiger-leckueberwachungssysteme-und-leckschutzauskleidungen/lag-14-er/40642-signalteil-lag-14-er"
+        "assetKind": "Instance",
+        "globalAssetId": "https://www.afriso.com/de/produkte/haustechnik/leckanzeiger-leckueberwachungssysteme-und-leckschutzauskleidungen/zubehoer-ersatzteile-leckanzeiger-leckueberwachungssysteme-und-leckschutzauskleidungen/lag-14-er/40642-signalteil-lag-14-er",
+        "assetType": "Steuergerät / Control Unit",
+        "defaultThumbnail": {
+          "path": "/aasx/Nameplate/marking_ce.png",
+          "contentType": "image/png"
+        }
       },
       "submodels": [
         {

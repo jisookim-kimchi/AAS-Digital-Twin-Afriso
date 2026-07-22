@@ -1,7 +1,7 @@
 import sys
 import glob
 import os
-from AAS.LAG14ER import process_excel
+from AAS.parsing import process_excel
 
 def main():
     if len(sys.argv) > 1:
