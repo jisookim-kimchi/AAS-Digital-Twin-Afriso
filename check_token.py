@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-KEYCLOAK_URL = "http://localhost:9999/realms/basyx/protocol/openid-connect/token"
-GATEWAY_URL = "http://localhost:8080"
+SERVER_IP = os.getenv("SERVER_IP", "localhost")
+KEYCLOAK_URL = f"http://{SERVER_IP}:9999/realms/basyx/protocol/openid-connect/token"
+GATEWAY_URL = f"http://{SERVER_IP}:8080"
 
 USER_NAME = os.getenv("KEYCLOAK_TEST_USER_NAME", "testuser")
 USER_PASSWORD = os.getenv("KEYCLOAK_TEST_USER_PASSWORD", "1234")

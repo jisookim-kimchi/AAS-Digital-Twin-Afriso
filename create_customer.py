@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-KEYCLOAK_URL = "http://localhost:9999"
+SERVER_IP = os.getenv("SERVER_IP", "localhost")
+KEYCLOAK_URL = f"http://{SERVER_IP}:9999"
 REALM = "basyx"
 
 ADMIN_USER = os.getenv("KEYCLOAK_ADMIN", "keycloack")

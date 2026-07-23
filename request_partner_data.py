@@ -33,6 +33,8 @@ def request_partner_data(partner_ip, username, password):
 
     except Exception as e:
         print(f"Connection error to {partner_ip}: {e}")
+        if partner_ip not in ("localhost", "127.0.0.1"):
+            print(f"Tip: If testing locally, run: make request-partner IP=localhost USER={username} PASSWORD={password}")
 
 
 if __name__ == "__main__":

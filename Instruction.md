@@ -19,7 +19,7 @@ Security Architecture
 4. Verify Security & Token Authentication:
    make check-token
 
-5. Extract Quick Access Tokens (for AAS Web UI at http://localhost:3000):
+5. Extract Quick Access Tokens (for AAS Web UI at http://${SERVER_IP}:3000):
    make get-user-token
    make get-admin-token
 

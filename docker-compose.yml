@@ -31,14 +31,14 @@ services:
       SPRING_MONGODB_URI: "mongodb://${DB_USER}:${DB_PASSWORD}@mongo:27017/machine1?authSource=admin"
       BASYX_AASREPOSITORY_FEATURE_REGISTRYINTEGRATION: "http://aas-registry:8080"
       BASYX_SUBMODELREPOSITORY_FEATURE_REGISTRYINTEGRATION: "http://submodel-registry:8080"
-      BASYX_EXTERNALURL: "http://localhost:8081"
+      BASYX_EXTERNALURL: "http://${SERVER_IP:-localhost}:8081"
       BASYX_FEATURE_AASREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SUBMODELREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SECURITY_ENABLED: "true" 
       BASYX_FEATURE_SECURITY_RBAC_ENABLED: "true"
       BASYX_FEATURE_SECURITY_RBAC_POLICY: "/opt/basyx/basyx-rbac.json"
       SPRING_PROFILES_ACTIVE: "jwt"
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:9999/realms/basyx"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://${SERVER_IP:-localhost}:9999/realms/basyx"
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/basyx/protocol/openid-connect/certs"
     volumes:
       - ./config/basyx-rbac.json:/opt/basyx/basyx-rbac.json:ro
@@ -62,14 +62,14 @@ services:
       SPRING_MONGODB_URI: "mongodb://${DB_USER}:${DB_PASSWORD}@mongo:27017/machine2?authSource=admin"
       BASYX_AASREPOSITORY_FEATURE_REGISTRYINTEGRATION: "http://aas-registry:8080"
       BASYX_SUBMODELREPOSITORY_FEATURE_REGISTRYINTEGRATION: "http://submodel-registry:8080"
-      BASYX_EXTERNALURL: "http://localhost:8082"
+      BASYX_EXTERNALURL: "http://${SERVER_IP:-localhost}:8082"
       BASYX_FEATURE_AASREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SUBMODELREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SECURITY_ENABLED: "true"
       BASYX_FEATURE_SECURITY_RBAC_ENABLED: "true"
       BASYX_FEATURE_SECURITY_RBAC_POLICY: "/opt/basyx/basyx-rbac.json"
       SPRING_PROFILES_ACTIVE: "jwt"
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:9999/realms/basyx"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://${SERVER_IP:-localhost}:9999/realms/basyx"
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/basyx/protocol/openid-connect/certs"
     volumes:
       - ./config/basyx-rbac.json:/opt/basyx/basyx-rbac.json:ro
@@ -95,9 +95,9 @@ services:
       AAS_DISCOVERY_PATH: "http://${SERVER_IP:-localhost}:8084"
       AAS_REGISTRY_PATH: "http://${SERVER_IP:-localhost}:8083"
       SUBMODEL_REGISTRY_PATH: "http://${SERVER_IP:-localhost}:8084"
-      AAS_REPO_PATH: "http://${SERVER_IP:-localhost}:8080"
-      SUBMODEL_REPO_PATH: "http://${SERVER_IP:-localhost}:8080"
-      CD_REPO_PATH: "http://${SERVER_IP:-localhost}:8080"
+      AAS_REPO_PATH: "http://${SERVER_IP:-localhost}"
+      SUBMODEL_REPO_PATH: "http://${SERVER_IP:-localhost}"
+      CD_REPO_PATH: "http://${SERVER_IP:-localhost}"
       SM_VIEWER_EDITOR: "true"
       START_PAGE_ROUTE_NAME: AASEditor
       AUTH_ENABLED: "true"
@@ -165,10 +165,12 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
-      - "8080:80"
-      - "3000:3000"
-      - "8443:443"
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
     volumes:
       - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro

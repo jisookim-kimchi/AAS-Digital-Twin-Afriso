@@ -1,5 +1,8 @@
 import os
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 #print(dir(json))
 import pandas as panda
 from basyx.aas.adapter.json import read_aas_json_file
@@ -53,25 +56,27 @@ def process_excel(excel_path):
 
     def replace_values(node):
         if isinstance(node, dict):
-            if "idShort" in node and "value" in node and "modelType" in node:
+            if "idShort" in node and "modelType" in node:
                 key = node["idShort"]
                 model_type = node["modelType"]
                 
-                if key in value_map:
-                    if model_type in ["Property", "File"]:
-                        node["value"] = str(value_map[key])
-                    elif model_type == "MultiLanguageProperty":
-                        if isinstance(node["value"], list) and len(node["value"]) > 0 and isinstance(node["value"][0], dict) and "text" in node["value"][0]:
-                            node["value"][0]["text"] = str(value_map[key])
-                            if key in lang_map:
-                                node["value"][0]["language"] = lang_map[key]
-                
-                else:
-                    if model_type in ["Property", "File", "MultiLanguageProperty"]:
+                if model_type in ["Property", "File"]:
+                    if key in value_map and str(value_map[key]).strip():
+                        val_str = str(value_map[key]).replace("[DUMMY] ", "")
+                        node["value"] = val_str
+                    else:
+                        if "value" in node:
+                            del node["value"]
+                elif model_type == "MultiLanguageProperty":
+                    if key in value_map and str(value_map[key]).strip():
+                        lang = lang_map.get(key, "en")
+                        val_str = str(value_map[key]).replace("[DUMMY] ", "")
+                        node["value"] = [{"language": lang, "text": val_str}]
+                    else:
                         if "value" in node:
                             del node["value"]
                 
-            for k, v in node.items():
+            for k, v in list(node.items()):
                 replace_values(v)
             
         elif isinstance(node, list):
@@ -79,6 +84,55 @@ def process_excel(excel_path):
                 replace_values(item)
 
     replace_values(aas_data)
+
+    # Extract all semanticIds and generate ConceptDescriptions to prevent 404s
+    import re
+    import io
+    semantic_ids = set()
+
+    def find_semantic_ids(node):
+        if isinstance(node, dict):
+            if "semanticId" in node and isinstance(node["semanticId"], dict) and "keys" in node["semanticId"]:
+                for k in node["semanticId"]["keys"]:
+                    if isinstance(k, dict) and "value" in k and k["value"]:
+                        semantic_ids.add(k["value"])
+            for v in node.values():
+                find_semantic_ids(v)
+        elif isinstance(node, list):
+            for item in node:
+                find_semantic_ids(item)
+
+    def clean_id_short(raw_id):
+        parts = re.split(r'[/_#.]', raw_id)
+        valid_parts = [p for p in parts if p]
+        base = valid_parts[-1] if valid_parts else "ConceptDescription"
+        cleaned = re.sub(r'[^a-zA-Z0-9_]', '_', base)
+        if not cleaned or not cleaned[0].isalpha():
+            cleaned = "CD_" + cleaned
+        return cleaned
+
+    find_semantic_ids(aas_data)
+
+    if "conceptDescriptions" not in aas_data:
+        aas_data["conceptDescriptions"] = []
+
+    existing_ids = {cd["id"] for cd in aas_data["conceptDescriptions"] if isinstance(cd, dict) and "id" in cd}
+
+    for sid in semantic_ids:
+        if sid not in existing_ids:
+            id_short = clean_id_short(sid)
+            aas_data["conceptDescriptions"].append({
+                "id": sid,
+                "idShort": id_short,
+                "displayName": [
+                    {
+                        "language": "en",
+                        "text": id_short
+                    }
+                ],
+                "modelType": "ConceptDescription"
+            })
+            existing_ids.add(sid)
 
     # converting to json file
     with open(output_json_path, "w", encoding="utf-8") as f:
@@ -89,6 +143,11 @@ def process_excel(excel_path):
         object_store = DictObjectStore(read_aas_json_file(f))
 
     file_store = aasx.DictSupplementaryFileContainer()
+    
+    # Add dummy thumbnail PNG to prevent thumbnail 404
+    PNG_BYTES = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\rIDATx\x9cc\xf8\xff\xff?\x03\x00\x05\xfe\x02\xfe\xa7\x35\x81\x84\x00\x00\x00\x00IEND\xaeB`\x82'
+    file_store.add_file("/aasx/Nameplate/marking_ce.png", io.BytesIO(PNG_BYTES), "image/png")
+
     aasx_path = os.path.join(base_dir, "..", "aasx", f"{file_name}.aasx")
 
     with aasx.AASXWriter(aasx_path) as writer:
@@ -105,18 +164,21 @@ def process_excel(excel_path):
     import requests
     import base64
     
+    server_ip = os.getenv("SERVER_IP", "localhost")
+    upload_host = os.getenv("UPLOAD_HOST", "localhost")
+
     if file_name == "LAG14ER":
-        upload_url = "http://localhost:8081/upload"
-        server_base_url = "http://localhost:8081"
+        upload_url = f"http://{upload_host}:8081/upload"
+        server_base_url = f"http://{upload_host}:8081"
     elif file_name == "PrimoVent":
-        upload_url = "http://localhost:8082/upload"
-        server_base_url = "http://localhost:8082"
+        upload_url = f"http://{upload_host}:8082/upload"
+        server_base_url = f"http://{upload_host}:8082"
     else:
-        upload_url = "http://localhost:8081/upload"
-        server_base_url = "http://localhost:8081"
+        upload_url = f"http://{upload_host}:8081/upload"
+        server_base_url = f"http://{upload_host}:8081"
         
-    registry_base_url = "http://localhost:8083"
-    sm_registry_base_url = "http://localhost:8084"
+    registry_base_url = f"http://{upload_host}:8083"
+    sm_registry_base_url = f"http://{upload_host}:8084"
 
     def delete_existing_shell_or_sm(item_id, is_submodel=False):
         b64_id = base64.b64encode(item_id.encode('utf-8')).decode('utf-8')

@@ -1,3 +1,6 @@
+-include .env
+SERVER_IP ?= localhost
+
 VENV := .venv
 PYTHON := $(VENV)/bin/python3
 PIP := $(VENV)/bin/pip
@@ -17,7 +20,8 @@ venv:
 	python3 -m venv $(VENV)
 	$(PIP) install --upgrade pip
 	$(PIP) install pandas basyx-python-sdk openpyxl pyecma376-2 requests podman-compose
-
+	$(PIP) install flask pandas openpyxl basyx-python-sdk requests
+	
 # Stop podman-compose services
 down:
 	$(PODMAN_COMPOSE) down
@@ -73,33 +77,37 @@ fclean-docker: clean-docker
 run: venv
 	$(PYTHON) main.py
 
+# Launch Partner AAS Web Explorer UI
+web: venv
+	$(PYTHON) app.py
+
 # Check MongoDB health status
 check-mongo:
 	@docker exec mongo mongosh -u mongoAdmin -p mongoPassword --authenticationDatabase admin --eval "db.adminCommand('ping')" >/dev/null 2>&1 && echo "MongoDB is RUNNING! (OK)" || echo "MongoDB is DOWN!"
 
 # Check Nginx Gateway health status
 check-nginx:
-	@curl -s http://localhost:8080/actuator/health | grep -q "UP" && echo "Nginx is RUNNING! (OK)" || echo "Nginx-Proxy is DOWN!"
+	@curl -s -I http://$${SERVER_IP:-localhost}:80/ | grep -qE "301|302|200|nginx|Moved|Found" && echo "Nginx is RUNNING! (OK)" || echo "Nginx-Proxy is DOWN!"
 
 # Check Keycloak IAM server health status
 check-keycloak:
-	@curl -s http://localhost:9999/realms/basyx | grep -q "realm" && echo "Keycloak is RUNNING! (OK)" || echo "Keycloak-Auth is DOWN!"
+	@curl -s http://$(SERVER_IP):9999/realms/basyx | grep -q "realm" && echo "Keycloak is RUNNING! (OK)" || echo "Keycloak-Auth is DOWN!"
 
 # Check Machine1 AAS server health status
 check-aas:
-	@curl -s http://localhost:8081/actuator/health | grep -q "UP" && echo "Machine1 is RUNNING! (OK)" || echo "Machine1-AAS is DOWN!"
+	@curl -s http://$(SERVER_IP):8081/actuator/health | grep -q "UP" && echo "Machine1 is RUNNING! (OK)" || echo "Machine1-AAS is DOWN!"
 
 # Check Machine2 AAS server health status
 check-aas2:
-	@curl -s http://localhost:8082/actuator/health | grep -q "UP" && echo "Machine2 is RUNNING! (OK)" || echo "Machine2-AAS is DOWN!"
+	@curl -s http://$(SERVER_IP):8082/actuator/health | grep -q "UP" && echo "Machine2 is RUNNING! (OK)" || echo "Machine2-AAS is DOWN!"
 
 # Check AAS Registry health status
 check-aas-registry:
-	@curl -s http://localhost:8083/actuator/health | grep -q "UP" && echo "AAS-Registry is RUNNING! (OK)" || echo "AAS-Registry is DOWN!"
+	@curl -s http://$(SERVER_IP):8083/actuator/health | grep -q "UP" && echo "AAS-Registry is RUNNING! (OK)" || echo "AAS-Registry is DOWN!"
 
 # Check Submodel Registry health status
 check-sm:
-	@curl -s http://localhost:8084/actuator/health | grep -q "UP" && echo "Submodel-Registry is RUNNING! (OK)" || echo "Submodel-Registry is DOWN!"
+	@curl -s http://$(SERVER_IP):8084/actuator/health | grep -q "UP" && echo "Submodel-Registry is RUNNING! (OK)" || echo "Submodel-Registry is DOWN!"
 
 # Run comprehensive system health check report
 check-all:
@@ -111,11 +119,11 @@ check-token:
 
 # Extract JWT access token for aas-user (Read-Only)
 get-user-token:
-	@bash get_user_token.sh
+	@bash get_user_token.sh $(IP)
 
 # Extract JWT access token for aas-admin (Full Access)
 get-admin-token:
-	@bash get_admin_token.sh
+	@bash get_admin_token.sh $(IP)
 
 # Issue a new customer account in Keycloak
 add-customer:
@@ -147,6 +155,10 @@ check-logs-blocked:
 
 # Output Keycloak logout URL for session reset
 keycloak-logout:
-	@echo "http://localhost:9999/realms/basyx/protocol/openid-connect/logout"
+	@echo "http://$(SERVER_IP):9999/realms/basyx/protocol/openid-connect/logout"
 
-.PHONY: up venv down logs clean fclean up-podman down-podman logs-podman clean-podman fclean-podman run up-docker logs-docker down-docker clean-docker fclean-docker check-mongo check-nginx check-keycloak check-aas check-aas2 check-aas-registry check-sm check-ui check-all check-token get-user-token get-admin-token add-customer request-partner check-logs-get check-logs-post check-logs-delete check-logs-all check-logs-blocked keycloak-logout
+# Run Flask Web Application Dashboard
+web:
+	@.venv/bin/python3 app.py
+
+.PHONY: up venv down logs clean fclean up-podman down-podman logs-podman clean-podman fclean-podman run up-docker logs-docker down-docker clean-docker fclean-docker check-mongo check-nginx check-keycloak check-aas check-aas2 check-aas-registry check-sm check-ui check-all check-token get-user-token get-admin-token add-customer request-partner check-logs-get check-logs-post check-logs-delete check-logs-all check-logs-blocked keycloak-logout web
