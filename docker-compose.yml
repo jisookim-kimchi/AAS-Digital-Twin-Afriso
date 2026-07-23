@@ -65,7 +65,7 @@ services:
       BASYX_EXTERNALURL: "http://localhost:8082"
       BASYX_FEATURE_AASREGISTRYINTEGRATION: "true"
       BASYX_FEATURE_SUBMODELREGISTRYINTEGRATION: "true"
-      BASYX_FEATURE_SECURITY_ENABLED: "true" 
+      BASYX_FEATURE_SECURITY_ENABLED: "true"
       BASYX_FEATURE_SECURITY_RBAC_ENABLED: "true"
       BASYX_FEATURE_SECURITY_RBAC_POLICY: "/opt/basyx/basyx-rbac.json"
       SPRING_PROFILES_ACTIVE: "jwt"
@@ -76,7 +76,7 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-    networks: 
+    networks:
       - backend
       - frontend
   
@@ -92,16 +92,16 @@ services:
       ALLOW_EDITING: "true"
       ALLOW_UPLOADING: "true"
       ALLOW_LOGOUT: "true"
-      AAS_DISCOVERY_PATH: "http://localhost:8084"
-      AAS_REGISTRY_PATH: "http://localhost:8083"
-      SUBMODEL_REGISTRY_PATH: "http://localhost:8084"
-      AAS_REPO_PATH: "http://localhost:8080"
-      SUBMODEL_REPO_PATH: "http://localhost:8080"
-      CD_REPO_PATH: "http://localhost:8080"
+      AAS_DISCOVERY_PATH: "http://${SERVER_IP:-localhost}:8084"
+      AAS_REGISTRY_PATH: "http://${SERVER_IP:-localhost}:8083"
+      SUBMODEL_REGISTRY_PATH: "http://${SERVER_IP:-localhost}:8084"
+      AAS_REPO_PATH: "http://${SERVER_IP:-localhost}:8080"
+      SUBMODEL_REPO_PATH: "http://${SERVER_IP:-localhost}:8080"
+      CD_REPO_PATH: "http://${SERVER_IP:-localhost}:8080"
       SM_VIEWER_EDITOR: "true"
       START_PAGE_ROUTE_NAME: AASEditor
       AUTH_ENABLED: "true"
-      KEYCLOAK_URL: "http://localhost:9999"
+      KEYCLOAK_URL: "http://${SERVER_IP:-localhost}:9999"
       KEYCLOAK_REALM: "basyx"
       KEYCLOAK_CLIENT_ID: "basyx-client"
     volumes:
